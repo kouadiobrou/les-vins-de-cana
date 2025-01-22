@@ -16,9 +16,25 @@ app.use(cors({
 app.use(express.json());
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
+  family: 4
+})
   .then(() => console.log('Connected to MongoDB Atlas'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .catch(err => {
+    console.error('MongoDB connection error details:', {
+      name: err.name,
+      message: err.message,
+      code: err.code,
+      codeName: err.codeName
+    });
+    // Afficher l'URI (en masquant le mot de passe)
+    const maskedUri = process.env.MONGODB_URI.replace(/:[^:@]*@/, ':****@');
+    console.log('Attempted connection with URI:', maskedUri);
+  });
 
 // Basic test route
 app.get('/api/test', (req, res) => {
